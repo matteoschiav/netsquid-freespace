@@ -1,0 +1,72 @@
+image: adahlberg/nlblueprintci:18.04
+
+.add_ssh_key: &ssh_key
+    before_script:
+        ## Add private key to server access
+        - eval $(ssh-agent -s)
+        - mkdir -p ~/.ssh
+        - chmod 700 ~/.ssh
+        - echo "$SSH_PRIVATE_KEY" | ssh-add - > ~/.ssh/id_rsa
+        - chmod 400 ~/.ssh/id_rsa
+        - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+        - chmod 644 ~/.ssh/known_hosts
+
+.only_mr: &only_mr
+    only:
+        - master
+        - merge_requests
+
+.only_master: &only_master
+    only:
+        - master
+
+.install: &install
+    before_script:
+        - make install
+
+stages:
+    - install
+    - lint
+    - tests
+    - examples
+    - deploy
+
+install:
+    stage: install
+    script: make install
+    <<: *only_mr
+
+lint:
+    <<: *install
+    stage: lint
+    script: make lint
+    <<: *only_mr
+
+test:
+    <<: *install
+    stage: tests
+    script: make tests
+    <<: *only_mr
+
+examples:
+    <<: *install
+    stage: examples
+    script: make examples
+    <<: *only_mr
+
+deploy-wheel:
+    <<: *ssh_key
+    stage: deploy
+    script: make deploy-bdist
+    <<: *only_master
+
+deploy-docs:
+    <<: *ssh_key
+    stage: deploy
+    script: 
+        - make install
+        - cd docs
+        - make build
+        - make upload
+        - cd ..
+    <<: *only_master
