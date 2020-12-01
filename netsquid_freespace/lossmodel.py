@@ -11,29 +11,15 @@ This file contains the different loss models implemented for the free space chan
 """
 import numpy as np
 from scipy.special import i0, i1
+from numpy.random import weibull
 
 from netsquid.components.models.qerrormodels import QuantumErrorModel
 import netsquid.util.simtools as simtools
 from netsquid.util.simlog import warn_deprecated
 
-def randomSample(pdf,xmin=0,xmax=1,rng=None):
-    """ Sample a random number from the probability distribution pdf
-    
-    This function returns a random value in the interval [xmin,xmax] distributed
-    according to the distribution pdf(x).
-    """
-    
-    if rng is None:
-        rng = simtools.get_random_state()
-        
-    x = xmin + rng.random_sample() * (xmax-xmin)
-    y = rng.random_sample()
-    
-    while y > pdf(x):
-        x = xmin + rng.random_sample() * (xmax-xmin)
-        y = rng.random_sample()
-    
-    return x
+__all__ = [
+    'FreeSpaceLossModel',
+]
     
 
 class FreeSpaceLossModel(QuantumErrorModel):
@@ -144,17 +130,33 @@ class FreeSpaceLossModel(QuantumErrorModel):
         W = self.W0*np.sqrt(1 + (z*self.wavelength/(np.pi*self.W0**2))**2)
         X = (self.rx_aperture/W)**2
         T0 = np.sqrt(1 - np.exp(-2*X))
-        sigma = np.sqrt(1.919 * self.Cn2 * kwargs['length']**3 * (2*self.W0)**(-1./3.))
+        sigma = np.sqrt(1.919 * self.Cn2 * z**3 * (2*self.W0)**(-1./3.))
         l = 8 * X * np.exp(-4*X) * i1(4*X) / (1 - np.exp(-4*X)*i0(4*X)) / np.log( 2*T0**2/(1-np.exp(-4*X)*i0(4*X)))
         R = self.rx_aperture * np.log( 2*T0**2/(1-np.exp(-4*X)*i0(4*X)) )**(-1./l)
-        # define the PDTC
-        PDTC = lambda T: 2*R**2/(sigma**2*l*T) * (2*np.log(T0/T))**((2./l)-1) * np.exp( -R**2 * (2*np.log(T0/T))**(2./l) / (2*sigma**2) )
+#        print('T0 =',T0)
+
+        # define the parameters of the Weibull distribution
+        a = 2/l
+        scaleL = (2*(sigma/R)**2)**(l/2)
+        
+#        # test the distribution
+#        x = weibull(a,10000)
+#        scaleX = scaleL * x
+#        T = T0*np.exp(-scaleX/2)
+#        import matplotlib.pyplot as plt
+#        plt.hist(T,1000)
+
 
         for idx, qubit in enumerate(qubits):
             if qubit is None:
                 continue
             # extract the value of the transmission coefficient
-            T = randomSample(PDTC,0,T0,self.rng)
+#            print('Transmission coefficient extraction')
+            x = weibull(a,1)
+            scaleX = scaleL * x
+            T = T0*np.exp(-scaleX/2)
+#            print('T =',T)
             # calculate the probability of losing the qubit
             prob_loss = 1 - T**2
+#            print(prob_loss)
             self.lose_qubit(qubits, idx, prob_loss, rng=self.properties['rng'])
