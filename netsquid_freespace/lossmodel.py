@@ -125,6 +125,7 @@ class FreeSpaceLossModel(QuantumErrorModel):
         # TODO improve explanation in the docstring of this method
         # TODO explain the model below in the main docstring of this class
         # calculate the parameters used in the PDTC
+        
         z = length*1e3
         W = self.W0*np.sqrt(1 + (z*self.wavelength/(np.pi*self.W0**2))**2)
         X = (self.rx_aperture/W)**2
@@ -193,3 +194,93 @@ class FreeSpaceLossModel(QuantumErrorModel):
             prob_loss = self._sample_loss_probability(length=kwargs['length'])
 #            print(prob_loss)
             self.lose_qubit(qubits, idx, prob_loss, rng=self.properties['rng'])
+
+
+class FixedSatelliteLossModel(FreeSpaceLossModel):
+    """Model for photon loss on a satellite-to-ground static channel
+
+    Uses beam-wandering PDTC from [Vasylyev et al., PRL 108, 220501 (2012)] to
+    sample the loss probability of the photon.
+
+    Parameters
+    ----------
+    txDiv : float
+        Divergence of the beam sent from the satellite [rad].
+    sigmaPoint :
+        Pointing error of the satellite, standard deviation [rad].
+    rx_aperture : float
+        Radius of the receiving telescope [m].
+    Cn2 : float
+        Index of refraction structure constant [m**(-2/3)].
+    wavelength : float
+        Wavelength of the radiation [m].
+    rng : :obj:`~numpy.random.RandomState` or None, optional
+        Random number generator to use. If ``None`` then
+        :obj:`~netsquid.util.simtools.get_random_state` is used.
+    """
+    def __init__(self, txDiv, sigmaPoint, rx_aperture, Cn2, wavelength, rng=None):
+        super().__init__(0.21*wavelength/txDiv,rx_aperture,Cn2,wavelength,rng)
+        self.txDiv = txDiv
+        self.sigmaPoint = sigmaPoint
+        self.required_properties = ['length']
+
+    @property
+    def txDiv(self):
+        """float: divergence of the beam at the transmitter (satellite) [m]."""
+        return self.properties['txDiv']
+
+    @txDiv.setter
+    def txDiv(self, value):
+        if value < 0:
+            raise ValueError
+        self.properties['txDiv'] = value
+
+    @property
+    def sigmaPoint(self):
+        """float: pointing error at the transmitter (satellite) [m]."""
+        return self.properties['sigmaPoint']
+
+    @sigmaPoint.setter
+    def sigmaPoint(self, value):
+        if value < 0:
+            raise ValueError
+        self.properties['sigmaPoint'] = value
+        
+    def _compute_weibull_loss_model_parameters(self, length):
+        """
+        Parameters
+        ----------
+        length: float
+            Length of the channel.
+
+        Returns
+        -------
+        tuple (float, float, float)
+            The elements of the tuple are properties of the
+            Weibull distribution. From left to right:
+            - the 'shape' parameter
+            - the 'scale' parameter
+            - 'T0'
+        """
+        # TODO improve explanation in the docstring of this method
+        # TODO explain the model below in the main docstring of this class
+        # calculate the parameters used in the PDTC
+        
+        # this function cannot be used for range values lower than 10 km
+        if length <= 10:
+            raise ValueError
+        
+        z = length*1e3
+        W = self.txDiv * z
+        X = (self.rx_aperture/W)**2
+        T0 = np.sqrt(1 - np.exp(-2*X))
+        sigmaTurb = np.sqrt(1.919 * self.Cn2 * 10e3**3 * (2*self.txDiv*(z-10e3))**(-1./3.))
+        sigma = np.sqrt( (self.sigmaPoint*z)**2 + sigmaTurb**2 )
+        l = 8 * X * np.exp(-4*X) * i1(4*X) / (1 - np.exp(-4*X)*i0(4*X)) / np.log( 2*T0**2/(1-np.exp(-4*X)*i0(4*X)))
+        R = self.rx_aperture * np.log( 2*T0**2/(1-np.exp(-4*X)*i0(4*X)) )**(-1./l)
+
+        # define the parameters of the Weibull distribution
+        a = 2/l
+        scaleL = (2*(sigma/R)**2)**(l/2)
+
+        return (a, scaleL, T0)

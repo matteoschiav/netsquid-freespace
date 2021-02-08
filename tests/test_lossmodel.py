@@ -1,6 +1,6 @@
 import unittest
 import netsquid.qubits.qubitapi as qapi
-from netsquid_freespace.lossmodel import FreeSpaceLossModel
+from netsquid_freespace.lossmodel import FreeSpaceLossModel, FixedSatelliteLossModel
 
 
 class TestFreeSpaceLossModel(unittest.TestCase):
@@ -9,17 +9,17 @@ class TestFreeSpaceLossModel(unittest.TestCase):
 
         # Define an example set of parameters
         # TODO replace by values for which you know the outcome
-        W0 = 1
-        rx_aperture = 1
-        Cn2 = 0.5
-        wavelength = 1500e-9
-        length = 100
+        W0 = 0.1
+        rx_aperture = 0.2
+        Cn2 = 1e-14
+        wavelength = 1550e-9
+        length = 10
 
         # expected parameters of the distribution
         # TODO replace by values we really expect
-        expected_shape = 0
-        expected_scale = 1
-        expected_T0 = 1
+        expected_shape = 0.5183654627815495
+        expected_scale = 2.107171368616519
+        expected_T0 = 0.9991965469553676
 
         # computed parameters
         loss_model = FreeSpaceLossModel(W0=W0,
@@ -33,6 +33,36 @@ class TestFreeSpaceLossModel(unittest.TestCase):
         self.assertAlmostEqual(shape, expected_shape)
         self.assertAlmostEqual(scale, expected_scale)
         self.assertAlmostEqual(T0, expected_T0)
+        
+    def test_weibull_loss_model_no_atmosphere(self):
+
+        # Define an example set of parameters
+        # TODO replace by values for which you know the outcome
+        W0 = 0.1
+        rx_aperture = 0.2
+        Cn2 = 0
+        wavelength = 1550e-9
+        length = 10
+
+        # expected parameters of the distribution
+        # TODO replace by values we really expect
+        expected_shape = 0.5183654627815495
+        expected_scale = 0
+        expected_T0 = 0.9991965469553676
+
+        # computed parameters
+        loss_model = FreeSpaceLossModel(W0=W0,
+                                        rx_aperture=rx_aperture,
+                                        Cn2=Cn2,
+                                        wavelength=wavelength)
+        shape, scale, T0 = loss_model._compute_weibull_loss_model_parameters(length=length)
+
+        # check that the expected parameters are the same as
+        # the computed ones
+        self.assertAlmostEqual(shape, expected_shape)
+        self.assertAlmostEqual(scale, expected_scale)
+        self.assertAlmostEqual(T0, expected_T0)
+
 
     def test_loss_is_applied_to_qubits(self):
         """We override the `_sample_loss_probability` method
@@ -100,6 +130,70 @@ class TestFreeSpaceLossModel(unittest.TestCase):
         loss_model.error_operation(qubits=qubits, length=length)
         for qubit in qubits:
             self.assertFalse(qubit is None)
+
+class TestFixedSatelliteLossModel(unittest.TestCase):
+
+    def test_weibull_loss_model_computation(self):
+
+        # Define an example set of parameters
+        # TODO replace by values for which you know the outcome
+        txDiv = 10e-6
+        sigmaPoint = 1e-6
+        rx_aperture = 0.75
+        Cn2 = 1e-14
+        wavelength = 1550e-9
+        length = 1000
+
+        # expected parameters of the distribution
+        # TODO replace by values we really expect
+        expected_shape = 0.9999999406747881
+        expected_scale = 0.04005756947583463
+        expected_T0 = 0.10576840449192237
+
+        # computed parameters
+        loss_model = FixedSatelliteLossModel(txDiv=txDiv,
+                                             sigmaPoint=sigmaPoint,
+                                             rx_aperture=rx_aperture,
+                                             Cn2=Cn2,
+                                             wavelength=wavelength)
+        shape, scale, T0 = loss_model._compute_weibull_loss_model_parameters(length=length)
+
+        # check that the expected parameters are the same as
+        # the computed ones
+        self.assertAlmostEqual(shape, expected_shape)
+        self.assertAlmostEqual(scale, expected_scale)
+        self.assertAlmostEqual(T0, expected_T0)
+        
+    def test_weibull_loss_model_no_atmosphere_or_point(self):
+
+        # Define an example set of parameters
+        # TODO replace by values for which you know the outcome
+        txDiv = 10e-6
+        sigmaPoint = 0
+        rx_aperture = 0.75
+        Cn2 = 0
+        wavelength = 1550e-9
+        length = 1000
+
+        # expected parameters of the distribution
+        # TODO replace by values we really expect
+        expected_shape = 0.9999999406747881
+        expected_scale = 0
+        expected_T0 = 0.10576840449192237
+
+        # computed parameters
+        loss_model = FixedSatelliteLossModel(txDiv=txDiv,
+                                             sigmaPoint=sigmaPoint,
+                                             rx_aperture=rx_aperture,
+                                             Cn2=Cn2,
+                                             wavelength=wavelength)
+        shape, scale, T0 = loss_model._compute_weibull_loss_model_parameters(length=length)
+
+        # check that the expected parameters are the same as
+        # the computed ones
+        self.assertAlmostEqual(shape, expected_shape)
+        self.assertAlmostEqual(scale, expected_scale)
+        self.assertAlmostEqual(T0, expected_T0)
 
 
 if __name__ == "__main__":
