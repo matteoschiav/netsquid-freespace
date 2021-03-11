@@ -19,6 +19,7 @@ from netsquid.util.simlog import warn_deprecated
 
 __all__ = [
     'FreeSpaceLossModel',
+    'FixedSatelliteLossModel'
 ]
 
 
@@ -38,17 +39,20 @@ class FreeSpaceLossModel(QuantumErrorModel):
         Index of refraction structure constant [m**(-2/3)].
     wavelength : float
         Wavelength of the radiation [m].
+    Tatm : float
+        Atmospheric transmittance (square of the transmission coefficient).
     rng : :obj:`~numpy.random.RandomState` or None, optional
         Random number generator to use. If ``None`` then
         :obj:`~netsquid.util.simtools.get_random_state` is used.
     """
-    def __init__(self, W0, rx_aperture, Cn2, wavelength, rng=None):
+    def __init__(self, W0, rx_aperture, Cn2, wavelength, Tatm=1, rng=None):
         super().__init__()
         self.rng = rng if rng else simtools.get_random_state()
         self.W0 = W0
         self.rx_aperture = rx_aperture
         self.Cn2 = Cn2
         self.wavelength = wavelength
+        self.Tatm = Tatm
         self.required_properties = ['length']
 
     @property
@@ -61,6 +65,17 @@ class FreeSpaceLossModel(QuantumErrorModel):
         if not isinstance(value, np.random.RandomState):
             raise TypeError("{} is not a valid numpy RandomState".format(value))
         self.properties['rng'] = value
+        
+    @property
+    def Tatm(self):
+        """ :float: atmosphere transmittance. """
+        return self.properties['Tatm']
+
+    @Tatm.setter
+    def Tatm(self, value):
+        if (value < 0) or (value > 1):
+            raise ValueError
+        self.properties['Tatm'] = value
 
     @property
     def W0(self):
@@ -160,7 +175,7 @@ class FreeSpaceLossModel(QuantumErrorModel):
         T = T0*np.exp(-scaleX/2)
         # print('T =',T)
         # calculate the probability of losing the qubit
-        prob_loss = 1 - T**2
+        prob_loss = 1 - self.Tatm * T**2
         return prob_loss
 
     def error_operation(self, qubits, delta_time=0, **kwargs):
@@ -214,12 +229,14 @@ class FixedSatelliteLossModel(FreeSpaceLossModel):
         Index of refraction structure constant [m**(-2/3)].
     wavelength : float
         Wavelength of the radiation [m].
+    Tatm : float
+        Atmospheric transmittance (square of the transmission coefficient).
     rng : :obj:`~numpy.random.RandomState` or None, optional
         Random number generator to use. If ``None`` then
         :obj:`~netsquid.util.simtools.get_random_state` is used.
     """
-    def __init__(self, txDiv, sigmaPoint, rx_aperture, Cn2, wavelength, rng=None):
-        super().__init__(0.21*wavelength/txDiv,rx_aperture,Cn2,wavelength,rng)
+    def __init__(self, txDiv, sigmaPoint, rx_aperture, Cn2, wavelength, Tatm=1, rng=None):
+        super().__init__(0.21*wavelength/txDiv,rx_aperture,Cn2,wavelength,Tatm,rng)
         self.txDiv = txDiv
         self.sigmaPoint = sigmaPoint
         self.required_properties = ['length']
