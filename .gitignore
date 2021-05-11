@@ -9,3 +9,4 @@ dist/
 *.idea
 htmlcov/
 .coverage
+orekit-data.zip
