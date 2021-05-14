@@ -6,7 +6,7 @@ Description
 
 This is a user contributed _snippet_ for the [NetSquid quantum network simulator](https://netsquid.org).
 
-Free-space channel models
+It provides a model for the ground-to-ground free-space channel and the downlink satellite channel, exploiting the model described in \[Vasylyev et al., PRL **108**, 220501 (2012)\].
 
 Installation
 ------------
@@ -21,30 +21,29 @@ To build and see the docs see the [docs README](docs/README.md).
 Usage
 -----
 
-**TEMPLATE**: briefly describe how to use your package.
+This snippet implements two different classes for the "quantum\_loss\_model", i.e., the FreeSpaceLossModel, for a ground-to-ground channel with no pointing error and turbulence all over the length of the channel, and the FixedSatelliteLossModel, describing a satellite-to-ground static channel, with pointing error and turbulence over the last 10 kilometers.
 
 Contributors
 ------------
 
-**TEMPLATE**: specify who contributed to your package and their contact details.
+Matteo Schiavon - LIP6 (Sorbonne University) - matteo.schiavon@lip6.fr
+Raja Yehia - LIP6 (Sorbonne University) - raja.yehia@lip6.fr
+Tim Coopmans - TU Delft - T.J.Coopmans@tudelft.nl
 
 License
 -------
 
-**TEMPLATE**: specify the license applicable to your package.
+Copyright (C) 2020- LIP6 (Sorbonne University)
 
-The NetSquid-SnippetTemplate has the following license:
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-> Copyright 2020 QuTech (TUDelft and TNO)
->
->   Licensed under the Apache License, Version 2.0 (the "License");
->   you may not use this file except in compliance with the License.
->   You may obtain a copy of the License at
->
->     http://www.apache.org/licenses/LICENSE-2.0
->
->   Unless required by applicable law or agreed to in writing, software
->   distributed under the License is distributed on an "AS IS" BASIS,
->   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
->   See the License for the specific language governing permissions and
->   limitations under the License.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.

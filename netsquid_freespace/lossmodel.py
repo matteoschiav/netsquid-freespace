@@ -122,7 +122,16 @@ class FreeSpaceLossModel(QuantumErrorModel):
         self.properties['wavelength'] = value
 
     def _compute_weibull_loss_model_parameters(self, length):
-        """
+        """ Compute the parameters of the Weibull model
+        
+        This function calculates the parameters of the Weibull distribution
+        lambda and R, described in equations (6) and (7) of [Vasylyev et al.,
+        PRL 108, 220501 (2012)], and the maximal transmission T0, described in
+        equation (5) of the same reference.
+        
+        It then converts these parameters to the parameters a and scaleL 
+        required by numpy to sample the Weibull distribution.
+        
         Parameters
         ----------
         length: float
@@ -137,9 +146,6 @@ class FreeSpaceLossModel(QuantumErrorModel):
             - the 'scale' parameter
             - 'T0'
         """
-        # TODO improve explanation in the docstring of this method
-        # TODO explain the model below in the main docstring of this class
-        # calculate the parameters used in the PDTC
         
         z = length*1e3
         W = self.W0*np.sqrt(1 + (z*self.wavelength/(np.pi*self.W0**2))**2)
@@ -156,7 +162,16 @@ class FreeSpaceLossModel(QuantumErrorModel):
         return (a, scaleL, T0)
 
     def _sample_loss_probability(self, length):
-        """
+        """ Sample the loss probability distribution
+        
+        This function samples the Weibull distribution to get the value of the
+        channel transmittance, using the parameters calculated in the
+        _compute_weibull_loss_model_parameter method.
+        
+        It uses the numpy.weibull method to implement the sampling of the 
+        probability distribution described in equation (9) of [Vasylyev et al.,
+        PRL 108, 220501 (2012)].
+        
         Parameters
         ----------
         length: float
@@ -169,11 +184,9 @@ class FreeSpaceLossModel(QuantumErrorModel):
         a, scaleL, T0 = self._compute_weibull_loss_model_parameters(length=length)
 
         # extract the value of the transmission coefficient
-        # print('Transmission coefficient extraction')
         x = weibull(a, 1)
         scaleX = scaleL * x
         T = T0*np.exp(-scaleX/2)
-        # print('T =',T)
         # calculate the probability of losing the qubit
         prob_loss = 1 - self.Tatm * T**2
         return prob_loss
@@ -196,18 +209,11 @@ class FreeSpaceLossModel(QuantumErrorModel):
             kwargs['length'] = kwargs['channel'].properties["length"]
             del kwargs['channel']
 
-#        # test the distribution
-#        x = weibull(a,10000)
-#        scaleX = scaleL * x
-#        T = T0*np.exp(-scaleX/2)
-#        import matplotlib.pyplot as plt
-#        plt.hist(T,1000)
 
         for idx, qubit in enumerate(qubits):
             if qubit is None:
                 continue
             prob_loss = self._sample_loss_probability(length=kwargs['length'])
-#            print(prob_loss)
             self.lose_qubit(qubits, idx, prob_loss, rng=self.properties['rng'])
 
 
@@ -264,7 +270,16 @@ class FixedSatelliteLossModel(FreeSpaceLossModel):
         self.properties['sigmaPoint'] = value
         
     def _compute_weibull_loss_model_parameters(self, length):
-        """
+        """Compute the parameters of the Weibull model
+        
+        This function calculates the parameters of the Weibull distribution
+        lambda and R, described in equations (6) and (7) of [Vasylyev et al.,
+        PRL 108, 220501 (2012)], and the maximal transmission T0, described in
+        equation (5) of the same reference.
+        
+        It then converts these parameters to the parameters a and scaleL 
+        required by numpy to sample the Weibull distribution.
+        
         Parameters
         ----------
         length: float
@@ -279,9 +294,6 @@ class FixedSatelliteLossModel(FreeSpaceLossModel):
             - the 'scale' parameter
             - 'T0'
         """
-        # TODO improve explanation in the docstring of this method
-        # TODO explain the model below in the main docstring of this class
-        # calculate the parameters used in the PDTC
         
         # this function cannot be used for range values lower than 10 km
         if length <= 10:

@@ -8,7 +8,6 @@ class TestFreeSpaceLossModel(unittest.TestCase):
     def test_weibull_loss_model_computation(self):
 
         # Define an example set of parameters
-        # TODO replace by values for which you know the outcome
         W0 = 0.1
         rx_aperture = 0.2
         Cn2 = 1e-14
@@ -16,7 +15,6 @@ class TestFreeSpaceLossModel(unittest.TestCase):
         length = 10
 
         # expected parameters of the distribution
-        # TODO replace by values we really expect
         expected_shape = 0.5183654627815495
         expected_scale = 2.107171368616519
         expected_T0 = 0.9991965469553676
@@ -37,7 +35,6 @@ class TestFreeSpaceLossModel(unittest.TestCase):
     def test_weibull_loss_model_no_atmosphere(self):
 
         # Define an example set of parameters
-        # TODO replace by values for which you know the outcome
         W0 = 0.1
         rx_aperture = 0.2
         Cn2 = 0
@@ -45,7 +42,6 @@ class TestFreeSpaceLossModel(unittest.TestCase):
         length = 10
 
         # expected parameters of the distribution
-        # TODO replace by values we really expect
         expected_shape = 0.5183654627815495
         expected_scale = 0
         expected_T0 = 0.9991965469553676
@@ -136,7 +132,6 @@ class TestFixedSatelliteLossModel(unittest.TestCase):
     def test_weibull_loss_model_computation(self):
 
         # Define an example set of parameters
-        # TODO replace by values for which you know the outcome
         txDiv = 10e-6
         sigmaPoint = 1e-6
         rx_aperture = 0.75
@@ -167,7 +162,6 @@ class TestFixedSatelliteLossModel(unittest.TestCase):
     def test_weibull_loss_model_no_atmosphere_or_point(self):
 
         # Define an example set of parameters
-        # TODO replace by values for which you know the outcome
         txDiv = 10e-6
         sigmaPoint = 0
         rx_aperture = 0.75
@@ -176,7 +170,6 @@ class TestFixedSatelliteLossModel(unittest.TestCase):
         length = 1000
 
         # expected parameters of the distribution
-        # TODO replace by values we really expect
         expected_shape = 0.9999999406747881
         expected_scale = 0
         expected_T0 = 0.10576840449192237
