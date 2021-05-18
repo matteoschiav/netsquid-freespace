@@ -10,7 +10,7 @@ on a fixed satellite (or ground telescope) and a receiver on a ground station. T
 channel is implemented using the FixedSatelliteLossModel (or FreeSpaceLossModel), 
 whose parameters can be changed by commenting/uncommenting the respective lines.
 The two stations perform several runs of the BB84 protocol, calculating the number of
-sifted bits for each run and, from that, the average transmission of the channel.
+received bits for each run and, from that, the average transmission of the channel.
 
 """
 
