@@ -140,7 +140,6 @@ class TestFixedSatelliteLossModel(unittest.TestCase):
         length = 1000
 
         # expected parameters of the distribution
-        # TODO replace by values we really expect
         expected_shape = 0.9999999406747881
         expected_scale = 0.04005756947583463
         expected_T0 = 0.10576840449192237

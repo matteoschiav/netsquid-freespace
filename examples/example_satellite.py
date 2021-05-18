@@ -4,6 +4,13 @@
 Created on Tue May 11 21:07:34 2021
 
 @author: schiavon
+
+This examples calculates the orbital parameters for the passage of a real satellite
+(in this case QSS-Micius), using the two-line elements. It then calculates the
+elevation, the channel length and the atmospheric losses with respect to two ground
+stations, placed in Paris and Delft. These parameters can be input to the
+FixedSatelliteLossModel to implement the corresponding channel on netsquid.
+
 """
 
 from netsquid_freespace import channel

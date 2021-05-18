@@ -8,6 +8,33 @@ Installation
 
 For Python to be able to find the NetSquid snippet package it needs to be installed as a package or added to the `PYTHONPATH` environment variable.
 
+### Requirements
+
+The calculation of the parameters of the satellite downlink channel depends on two external packages, *orekit*, for orbit determination, and *lowtran* for atmospheric absorption. The packages must be installed before the installation of the snippet.
+
+#### Orekit
+
+[Orekit](https://www.orekit.org/) is an open-source space dynamics library written in Java, with a [wrapper](https://gitlab.orekit.org/orekit-labs/python-wrapper) which allows to access its functionalities in Python.
+
+The recommended way to install it is through [Anaconda](https://docs.continuum.io/anaconda/install/):
+
+```shell
+conda install -c conda-forge orekit
+```
+
+More information can be found in the [installation tutorial](https://gitlab.orekit.org/orekit-labs/python-wrapper/-/wikis/installation) of the orekit python-wrapper wiki.
+
+#### Lowtran
+
+[Lowtran](https://pypi.org/project/lowtran/) is a Python package providing direct access to the LOWTRAN7 atmospheric absorption extinction model developed by the Air Force Geophysics Laboratory (AFGL). Since the model is implemented in Fortran, it is necessary to install a suitable compiler before the package.
+
+To install Gfortran:
+* Linux: `apt install gfortran`
+* Max: `brew install gcc`
+* [Windows](https://www.scivision.dev/windows-gcc-gfortran-cmake-make-install/)
+
+The Python lowtran package can be installed using pip. More information can be found in the [lowtran page](https://pypi.org/project/lowtran/).
+
 ### Install using pip
 
 To install the package and its requirements using pip run the following command in the repository root directory:

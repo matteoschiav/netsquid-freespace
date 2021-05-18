@@ -1,5 +1,18 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""
+Created on Tue May 11 21:07:34 2021
+
+@author: schiavon
+
+This example implements a simple quantum network consisting on a transmitter, placed
+on a fixed satellite (or ground telescope) and a receiver on a ground station. The 
+channel is implemented using the FixedSatelliteLossModel (or FreeSpaceLossModel), 
+whose parameters can be changed by commenting/uncommenting the respective lines.
+The two stations perform several runs of the BB84 protocol, calculating the number of
+sifted bits for each run and, from that, the average transmission of the channel.
+
+"""
 
 
 import netsquid as ns
