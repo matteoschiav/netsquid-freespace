@@ -7,9 +7,18 @@ def get_freespacelossmodel_class_with_cache(freespacelossmodelcls):
     This is achieved by caching the length of the channel, so that the Weibull distribution
     needs not be computed every time the same length is called.
 
-    **Important note:** every time the input parameters to the class `spacelossmodelcls`
-    (for example for :cls:`~netsquid_freespace.FixedSatelliteLossModel`: `txDiv`, `sigmaPoint`, etc.)
-    set to a new value, the cache should be manually reset by called the method `reset`.
+    **Important notes:**
+
+    - the input parameters for the class outputted by this method can no longer be positional,
+        but should have names. For example: after using
+        `model_cls = get_freespacelossmodel_class_with_cache(freespacelossmodelcls=FixedSatelliteModel)`,
+        the instatiation `model = modelcls(10e-6, 0.5e-6, 0.8, 0, 1550e-9, 2)` no longer
+        works; instead, use
+        `model = modelcls(txDiv=10e-6, sigmaPoint=0.5e-6, rx_aperture=0.8, Cn2=0, wavelength=1550e-9, Tatm=2)`
+
+    - every time the input parameters to the class `spacelossmodelcls` (for example for
+        :cls:`~netsquid_freespace.FixedSatelliteLossModel`: `txDiv`, `sigmaPoint`, etc.) are
+        set to a new value, the cache should be manually emptied by calling the method `reset`.
 
     Parameters
     ----------
