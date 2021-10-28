@@ -26,9 +26,9 @@ This snippet implements two different classes for the "quantum\_loss\_model", i.
 Contributors
 ------------
 
-Matteo Schiavon - LIP6 (Sorbonne University) - matteo.schiavon@lip6.fr
-Raja Yehia - LIP6 (Sorbonne University) - raja.yehia@lip6.fr
-Tim Coopmans - TU Delft - T.J.Coopmans@tudelft.nl
+Matteo Schiavon - LIP6 (Sorbonne University) - matteo.schiavon@lip6.fr  
+Raja Yehia - LIP6 (Sorbonne University) - raja.yehia@lip6.fr  
+Tim Coopmans - TU Delft - T.J.Coopmans@tudelft.nl  
 
 License
 -------
