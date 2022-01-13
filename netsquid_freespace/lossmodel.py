@@ -175,7 +175,7 @@ class FreeSpaceLossModel(QuantumErrorModel):
         Parameters
         ----------
         length: float
-            Length of the channel.
+            Length of the channel [km].
 
         Returns
         -------
@@ -242,7 +242,7 @@ class FixedSatelliteLossModel(FreeSpaceLossModel):
         :obj:`~netsquid.util.simtools.get_random_state` is used.
     """
     def __init__(self, txDiv, sigmaPoint, rx_aperture, Cn2, wavelength, Tatm=1, rng=None):
-        super().__init__(0.21*wavelength/txDiv,rx_aperture,Cn2,wavelength,Tatm,rng)
+        super().__init__(wavelength/(np.pi*txDiv),rx_aperture,Cn2,wavelength,Tatm,rng)
         self.txDiv = txDiv
         self.sigmaPoint = sigmaPoint
         self.required_properties = ['length']
