@@ -233,6 +233,57 @@ class AtmosphereTransmittanceModel:
         else:
             return 0.
     
+    def calculateTransmittanceHorizontal(self,distance):
+        """ Calculate the atmospheric transmittance for an horizontal path
+        
+        The height of the two stations is defined by the altitude parameter.
+        
+        Parameters
+        ----------
+        distance: float
+            Distance of the two stations [m].
+            
+        Returns
+        -------
+        float
+            The atmospheric transmittance for the path.
+        """
+        
+        self.c1['itype'] = 1
+        self.c1['iemsct'] = 0
+        
+        self.c1['range_km'] = float(distance/1000)
+        
+        return float(lowtran.golowtran(self.c1).transmission.values)
+    
+    def calculateTransmittanceSlant(self,h2,distance):
+        """ Calculate the atmospheric transmittance for a slant path
+        
+        The height of the first station is defined by the altitude parameter 
+        while the second station is at an altitude h2.
+        
+        Parameters
+        ----------
+        h2: float
+            Altitude of the second station [m].
+        distance: float
+            Distance of the two stations [m].
+        
+        Returns
+        -------
+        float
+            The atmospheric transmittance for the required path.
+        """
+        
+        self.c1['itype'] = 2
+        self.c1['iemsct'] = 0
+        
+        self.c1['h2'] = float(h2/1000)
+        self.c1['range_km'] = float(distance/1000)
+        
+        return float(lowtran.golowtran(self.c1).transmission.values)
+        
+        
         
 class SimpleDownlinkChannel:
     """ Downlink channel
