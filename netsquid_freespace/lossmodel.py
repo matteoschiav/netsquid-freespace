@@ -41,17 +41,20 @@ class FreeSpaceLossModel(QuantumErrorModel):
         Wavelength of the radiation [m].
     Tatm : float
         Atmospheric transmittance (square of the transmission coefficient).
+    sigmaPoint :
+        Pointing error, standard deviation [rad].        
     rng : :obj:`~numpy.random.RandomState` or None, optional
         Random number generator to use. If ``None`` then
         :obj:`~netsquid.util.simtools.get_random_state` is used.
     """
-    def __init__(self, W0, rx_aperture, Cn2, wavelength, Tatm=1, rng=None):
+    def __init__(self, W0, rx_aperture, Cn2, wavelength, Tatm=1, sigmaPoint=0., rng=None):
         super().__init__()
         self.rng = rng if rng else simtools.get_random_state()
         self.W0 = W0
         self.rx_aperture = rx_aperture
         self.Cn2 = Cn2
         self.wavelength = wavelength
+        self.sigmaPoint = sigmaPoint
         self.Tatm = Tatm
         self.required_properties = ['length']
 
@@ -65,6 +68,18 @@ class FreeSpaceLossModel(QuantumErrorModel):
         if not isinstance(value, np.random.RandomState):
             raise TypeError("{} is not a valid numpy RandomState".format(value))
         self.properties['rng'] = value
+
+    @property
+    def sigmaPoint(self):
+        """ :float: pointing error at the transmitter [m]."""
+        return self.properties['sigmaPoint']
+
+    @sigmaPoint.setter
+    def sigmaPoint(self, value):
+        if value < 0:
+            raise ValueError
+        self.properties['sigmaPount'] = value
+
         
     @property
     def Tatm(self):
@@ -151,7 +166,8 @@ class FreeSpaceLossModel(QuantumErrorModel):
         W = self.W0*np.sqrt(1 + (z*self.wavelength/(np.pi*self.W0**2))**2)
         X = (self.rx_aperture/W)**2
         T0 = np.sqrt(1 - np.exp(-2*X))
-        sigma = np.sqrt(1.919 * self.Cn2 * z**3 * (2*self.W0)**(-1./3.))
+        sigmaTurb = np.sqrt(1.919 * self.Cn2 * z**3 * (2*self.W0)**(-1./3.))
+        sigma = np.sqrt( (self.sigmaPoint*z)**2 + sigmaTurb**2 )
         l = 8 * X * np.exp(-4*X) * i1(4*X) / (1 - np.exp(-4*X)*i0(4*X)) / np.log( 2*T0**2/(1-np.exp(-4*X)*i0(4*X)))
         R = self.rx_aperture * np.log( 2*T0**2/(1-np.exp(-4*X)*i0(4*X)) )**(-1./l)
 
@@ -242,9 +258,8 @@ class FixedSatelliteLossModel(FreeSpaceLossModel):
         :obj:`~netsquid.util.simtools.get_random_state` is used.
     """
     def __init__(self, txDiv, sigmaPoint, rx_aperture, Cn2, wavelength, Tatm=1, rng=None):
-        super().__init__(wavelength/(np.pi*txDiv),rx_aperture,Cn2,wavelength,Tatm,rng)
+        super().__init__(wavelength/(np.pi*txDiv),rx_aperture,Cn2,wavelength,Tatm,sigmaPoint,rng)
         self.txDiv = txDiv
-        self.sigmaPoint = sigmaPoint
         self.required_properties = ['length']
 
     @property
@@ -257,17 +272,6 @@ class FixedSatelliteLossModel(FreeSpaceLossModel):
         if value < 0:
             raise ValueError
         self.properties['txDiv'] = value
-
-    @property
-    def sigmaPoint(self):
-        """float: pointing error at the transmitter (satellite) [m]."""
-        return self.properties['sigmaPoint']
-
-    @sigmaPoint.setter
-    def sigmaPoint(self, value):
-        if value < 0:
-            raise ValueError
-        self.properties['sigmaPoint'] = value
         
     def _compute_weibull_loss_model_parameters(self, length):
         """Compute the parameters of the Weibull model
