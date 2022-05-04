@@ -78,7 +78,7 @@ class FreeSpaceLossModel(QuantumErrorModel):
     def sigmaPoint(self, value):
         if value < 0:
             raise ValueError
-        self.properties['sigmaPount'] = value
+        self.properties['sigmaPoint'] = value
 
         
     @property
